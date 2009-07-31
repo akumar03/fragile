@@ -6,10 +6,11 @@
 
 $seq_file = $ARGV[0];
 $seq= "";
-$MAX_GAP = 30;
+$MAX_GAP = 0;
 $MIN_GAP = 3;
-$MAX_LENGTH = 500;
-$MIN = 100;
+$MAX_LENGTH = 20;
+$MIN_FRAG_LENGTH = 10;
+$MAX_FRAG_LENGTH = 21;
 open(SEQ,$seq_file)  or die("Can't open sequence file: $seq_file");
 while($line = <SEQ>) {
  if(!($line =~ m/^\>/)){
@@ -24,9 +25,9 @@ print "\n";
 $seq_length = length($seq);
 
 for($i=0;$i<$seq_length;$i++) {
-  $frag_length = $i+500; 
+  $frag_length = $i+$MAX_FRAG_LENGTH; 
   if($seq_length< $frag_length) { $frag_length= $seq_length ;}
-  for($j=$i+$MIN;$j<$frag_length;$j++) {
+  for($j=$i+$MIN_FRAG_LENGTH;$j<$frag_length;$j++) {
   $fragment = substr($seq,$i,$j-$i);
 #  print $fragment."\n";
 #10 percent of the sequence
@@ -35,7 +36,7 @@ for($i=0;$i<$seq_length;$i++) {
   if($gap_length > $MAX_GAP) { $gap_length = $MAX_GAP;}
     $score = 0;
 #get the round value instead of floor
-    $half = int(($j-$i)/2 +0.5)-1; 
+    $half = int(($j-$i)/2); 
 #    print "$i,$j,$half\n";
     for($k=$half;$k>0;$k--) {
       $char1 = substr($seq,$i+$k-1,1);
@@ -49,7 +50,7 @@ for($i=0;$i<$seq_length;$i++) {
       
 #      print "$k,$char1,$char2,$score\n";
     }
-    if($score>20) {
+    if($score>=10) {
       print "$i $j  $score  $fragment\n";
     }
   }
