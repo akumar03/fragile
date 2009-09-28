@@ -16,8 +16,17 @@ $seq= "";
 $MAX_GAP = 10;
 $MIN_GAP = 0;
 $MAX_LENGTH = 20;
-$MIN_FRAG_LENGTH = 10;
+$MIN_FRAG_LENGTH = 20;
 $MAX_FRAG_LENGTH = 500;
+$ATP = 0.80;
+$MISMATCH = 3;
+$INSERT = 2;
+$LOOP = 12;
+$LOOP_AT = 30;
+$STEM = 20;
+$OVERLAP = 0.75;
+
+ 
 open(SEQ,$seq_file)  or die("Can't open sequence file: $seq_file");
 while($line = <SEQ>) {
  if(!($line =~ m/^\>/)){
@@ -25,45 +34,86 @@ while($line = <SEQ>) {
  }
 }
 close(SEQ);
+
 $seq =~ s/\W+//g;
 #print $seq;
 print "\n";
 
 $seq_length = length($seq);
 
-for($i=0;$i<$seq_length;$i++) {
-  $frag_length = $i+$MAX_FRAG_LENGTH; 
-  if($seq_length< $frag_length) { $frag_length= $seq_length ;}
-  for($j=$i+$MIN_FRAG_LENGTH;$j<$frag_length;$j++) {
-  $fragment = substr($seq,$i,$j-$i);
-#  print $fragment."\n";
-#10 percent of the sequence
-  $gap_length = int(($j-$i)/10); 
-  if($gap_length < $MIN_GAP) { $gap_length = $MIN_GAP;}
-  if($gap_length > $MAX_GAP) { $gap_length = $MAX_GAP;}
-    $score = 0;
-#get the round value instead of floor
-    $half = int(($j-$i)/2); 
-#    print "$i,$j,$half\n";
-# a flag that turns 0 if there is a mismatch
-    $flag_match =1;
-    for($k=$half;$k>0;$k--) {
-      $char1 = substr($seq,$i+$k-1,1);
-      $char2 = substr($seq,$j-$k,1);
-      if(is_complement($char1,$char2)) {
-	$score++;
-      } else {
-	$score--;
-        $flag_match = 0;
-      }
-      if($score < 0 && ($half-$k)<= $gap_length) { $score =0;};
-      
-#      print "$k,$char1,$char2,$score\n";
-    }
-    if($score>=10 && $flag_match) {
-      print "$i $j  $score  $fragment\n";
-    }
+for(my $i=0;$i<$seq_length;$i++) {
+  $frag_end = $i+$MAX_FRAG_LENGTH; 
+  if($seq_length< $frag_end) { $frag_end= $seq_length ;}
+ 
+  for(my $j=$i+$MIN_FRAG_LENGTH;$j<$frag_end;$j++) {
+    $orig_fragment = substr($seq,$i,$j-$i);
+    $insert_count = 0;
+   $mismatch_count =0;
+    get_cruciform_nd($orig_fragment,'','',0);
   }
+}
+
+# This method is not based on dynamic programming
+sub  get_cruciform_nd {
+  my $fragment = shift;
+  my $alignment_left = shift;
+  my $alignment_right = shift;
+  my $score = shift;
+  my $frag_length = length($fragment);
+  if($score > 20) {
+    print "$orig_fragment $fragment $alignment_left $alignment_right $score\n";
+  }
+  if($frag_length == 0) {
+#   print "$alignment_left $alignment_right $score\n";
+   return 0;
+  } 
+  my $char1 = substr($fragment,0,1);
+  my $char2 = substr($fragment,$frag_length-1,1);
+
+  if(is_complement($char1,$char2)) {
+    return get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'M',$alignment_right.'M',++$score);
+  } else {
+    if(length($alignment_left) >=20 && length(alignment_right) >=20) {
+          get_crusiform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score);
+    }
+    if($mismatch_count <=2) {
+      $mismatch_count++;
+      get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'W',$alignment_right.'W',--$score);
+    }
+    if($insert_count <=1) {
+      $insert_count++; 
+      get_cruciform_nd(substr($fragment,0,$frag_length-2),$alignment_left,$alignment_right.'G',--$score);
+      get_cruciform_nd(substr($fragment,1,$frag_length-1),$alignment_left.'G',$alignment_left,--$score);
+    }
+
+  }
+
+  
+}
+
+sub get_best_cruciform {
+  my $fragment = shift;
+  my $frag_length = length($fragment);
+  my $half = int($frag_length/2);
+  my $insert_count = 0;
+  my $mismatch_count =0;
+  my @score;
+# arrow  is T (top), C (cross), L(left);
+  my @arrow;
+ 
+  for(my $i = 0;$i<$half;$i++) {
+   for(my $j =0;$j<$half-1;$j++) {
+     my $char1 = substr($fragment,$i,1);
+     my $char2 = substr($fragment,$frag_length-$j-1,1);
+     
+     
+     
+   }
+
+  } 
+  print "$fragment $frag_length $half\n";
+  
+
 }
 
 sub is_complement {
