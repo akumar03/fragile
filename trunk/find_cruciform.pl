@@ -48,7 +48,16 @@ for(my $i=0;$i<$seq_length;$i++) {
   for(my $j=$i+$MIN_FRAG_LENGTH;$j<$frag_end;$j++) {
     $orig_fragment = substr($seq,$i,$j-$i);
     $insert_count = 0;
-   $mismatch_count =0;
+    $mismatch_count =0;
+    if(is_AT_rich($orig_fragment)) {
+     $loop_threshold = (length($orig_fragment) -$LOOP_AT)/2;
+    } else {
+     $loop_threshold = (length($orig_fragment) -$LOOP)/2;
+    }
+    if($loop_threshold <$STEM ) {
+      $loop_threshold = $STEM;
+    }
+    
     get_cruciform_nd($orig_fragment,'','',0);
   }
 }
@@ -73,7 +82,8 @@ sub  get_cruciform_nd {
   if(is_complement($char1,$char2)) {
     return get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'M',$alignment_right.'M',++$score);
   } else {
-    if(length($alignment_left) >=20 && length(alignment_right) >=20) {
+    
+    if(length($alignment_left) >$loop_threshold && length(alignment_right) >=$loop_threshold) {
           get_crusiform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score);
     }
     if($mismatch_count <=2) {
@@ -87,7 +97,6 @@ sub  get_cruciform_nd {
     }
 
   }
-
   
 }
 
@@ -128,4 +137,21 @@ sub is_complement {
 
 }
 
+sub is_AT_rich {
+  my $fragment = shift;
+  $frag_length = length($fragment);
+  $at_count =0;
+  for(my $i =0;$i< $frag_length;$i++) {
+   my $char = substr($fragment,$i,1);
+   if( uc($char) eq 'A' || uc($char) eq 'T') {
+      $at_count++;
+   }
+  }
+  if($at_count > $ATP*$frag_length) {
+   return 1;
+  } else {
+    return 0;
+  }
+
+}
 
