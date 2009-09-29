@@ -37,7 +37,6 @@ close(SEQ);
 
 $seq =~ s/\W+//g;
 #print $seq;
-print "\n";
 
 $seq_length = length($seq);
 
@@ -49,6 +48,7 @@ for(my $i=0;$i<$seq_length;$i++) {
     $orig_fragment = substr($seq,$i,$j-$i);
     $insert_count = 0;
     $mismatch_count =0;
+    $start = $i;
     if(is_AT_rich($orig_fragment)) {
      $loop_threshold = (length($orig_fragment) -$LOOP_AT)/2;
     } else {
@@ -70,9 +70,12 @@ sub  get_cruciform_nd {
   my $score = shift;
   my $frag_length = length($fragment);
   if($score > 20) {
-    print "$orig_fragment $fragment $alignment_left $alignment_right $score\n";
+    print "$start $orig_fragment $fragment $alignment_left $alignment_right $score\n";
   }
   if($frag_length == 0) {
+    if($score > 15) {
+     print "F $start $orig_fragment $fragment $alignment_left $alignment_right $score\n";
+    }
 #   print "$alignment_left $alignment_right $score\n";
    return 0;
   } 
@@ -80,20 +83,20 @@ sub  get_cruciform_nd {
   my $char2 = substr($fragment,$frag_length-1,1);
 
   if(is_complement($char1,$char2)) {
-    return get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'M',$alignment_right.'M',++$score);
+    return get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'M',$alignment_right.'M',$score+1);
   } else {
     
     if(length($alignment_left) >$loop_threshold && length(alignment_right) >=$loop_threshold) {
-          get_crusiform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score);
+          get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score);
     }
     if($mismatch_count <=2) {
       $mismatch_count++;
-      get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'W',$alignment_right.'W',--$score);
+      get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'W',$alignment_right.'W',$score-1);
     }
     if($insert_count <=1) {
       $insert_count++; 
-      get_cruciform_nd(substr($fragment,0,$frag_length-2),$alignment_left,$alignment_right.'G',--$score);
-      get_cruciform_nd(substr($fragment,1,$frag_length-1),$alignment_left.'G',$alignment_left,--$score);
+      get_cruciform_nd(substr($fragment,0,$frag_length-2),$alignment_left,$alignment_right.'G',$score-1);
+      get_cruciform_nd(substr($fragment,1,$frag_length-1),$alignment_left.'G',$alignment_left,$score-1);
     }
 
   }
