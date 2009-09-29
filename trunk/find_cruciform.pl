@@ -15,15 +15,14 @@ $seq_file = $ARGV[0];
 $seq= "";
 $MAX_GAP = 10;
 $MIN_GAP = 0;
-$MAX_LENGTH = 20;
-$MIN_FRAG_LENGTH = 20;
-$MAX_FRAG_LENGTH = 500;
+$STEM = 20;
+$MIN_FRAG_LENGTH = 2*$STEM;
+$MAX_FRAG_LENGTH = 200;
 $ATP = 0.80;
 $MISMATCH = 3;
 $INSERT = 2;
 $LOOP = 12;
 $LOOP_AT = 30;
-$STEM = 20;
 $OVERLAP = 0.75;
 
  
@@ -49,16 +48,17 @@ for(my $i=0;$i<$seq_length;$i++) {
     $insert_count = 0;
     $mismatch_count =0;
     $start = $i;
+     $orig_length = length($orig_fragment);
     if(is_AT_rich($orig_fragment)) {
-     $loop_threshold = (length($orig_fragment) -$LOOP_AT)/2;
+     $loop_threshold = ($orig_length -$LOOP_AT)/2;
     } else {
-     $loop_threshold = (length($orig_fragment) -$LOOP)/2;
+     $loop_threshold = ($orig_length -$LOOP)/2;
     }
     if($loop_threshold <$STEM ) {
       $loop_threshold = $STEM;
     }
-    
-    get_cruciform_nd($orig_fragment,'','',0);
+#    print "$i $j $orig_fragment\n";
+    get_cruciform_nd($orig_fragment,'','',0,$mismatch_count,$insert_count);
   }
 }
 
@@ -68,9 +68,11 @@ sub  get_cruciform_nd {
   my $alignment_left = shift;
   my $alignment_right = shift;
   my $score = shift;
+  my $mismatch_count = shift;
+  my $insert_count = shift;
   my $frag_length = length($fragment);
   if($score > 20) {
-    print "$start $orig_fragment $fragment $alignment_left $alignment_right $score\n";
+    print "$start $orig_length $frag_length $mismatch_count $insert_count $loop_threshold $orig_fragment $alignment_left $alignment_right $score\n";
   }
   if($frag_length == 0) {
     if($score > 15) {
@@ -83,20 +85,18 @@ sub  get_cruciform_nd {
   my $char2 = substr($fragment,$frag_length-1,1);
 
   if(is_complement($char1,$char2)) {
-    return get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'M',$alignment_right.'M',$score+1);
+    return get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'M',$alignment_right.'M',$score+1,$mismatch_count,$insert_count);
   } else {
     
     if(length($alignment_left) >$loop_threshold && length(alignment_right) >=$loop_threshold) {
-          get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score);
+          get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score,$mismatch_count,$insert_count);
     }
     if($mismatch_count <=2) {
-      $mismatch_count++;
-      get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'W',$alignment_right.'W',$score-1);
+      get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'W',$alignment_right.'W',$score-1,$mismatch_count+1,$insert_count);
     }
     if($insert_count <=1) {
-      $insert_count++; 
-      get_cruciform_nd(substr($fragment,0,$frag_length-2),$alignment_left,$alignment_right.'G',$score-1);
-      get_cruciform_nd(substr($fragment,1,$frag_length-1),$alignment_left.'G',$alignment_left,$score-1);
+      get_cruciform_nd(substr($fragment,0,$frag_length-2),$alignment_left,$alignment_right.'G',$score-1,$mismatch_count,$insert_count+1);
+      get_cruciform_nd(substr($fragment,1,$frag_length-1),$alignment_left.'G',$alignment_left,$score-1,$mismatch_count,$insert_count+1);
     }
 
   }
