@@ -35,7 +35,7 @@ while($line = <SEQ>) {
 close(SEQ);
 
 $seq =~ s/\W+//g;
-#print $seq;
+# print $seq;
 
 $seq_length = length($seq);
 
@@ -44,7 +44,7 @@ for(my $i=0;$i<$seq_length;$i++) {
   if($seq_length< $frag_end) { $frag_end= $seq_length ;}
  
   for(my $j=$i+$MIN_FRAG_LENGTH;$j<$frag_end;$j++) {
-    $orig_fragment = substr($seq,$i,$j-$i);
+    $orig_fragment = substr($seq,$i,$j-$i+1);
     $insert_count = 0;
     $mismatch_count =0;
     $start = $i;
@@ -57,9 +57,13 @@ for(my $i=0;$i<$seq_length;$i++) {
     if($loop_threshold <$STEM ) {
       $loop_threshold = $STEM;
     }
-#    print "$i $j $orig_fragment\n";
+     
+#    print "S: $i $j $loop_threshold\n";
     get_cruciform_nd($orig_fragment,'','',0,$mismatch_count,$insert_count);
   }
+  open (STATUS,">status.out");
+  print STATUS "At position $i";
+  close STATUS;
 }
 
 # This method is not based on dynamic programming
@@ -71,8 +75,13 @@ sub  get_cruciform_nd {
   my $mismatch_count = shift;
   my $insert_count = shift;
   my $frag_length = length($fragment);
-  if($score > 20) {
-    print "$start $orig_length $frag_length $mismatch_count $insert_count $loop_threshold $orig_fragment $alignment_left $alignment_right $score\n";
+  if($score > 0) {
+#    print "$start $orig_length $frag_length $mismatch_count $insert_count $loop_threshold $orig_fragment $alignment_left $alignment_right $score\n";
+  }
+  if($fragment_length == 1) {
+    $alignment_left .= 'L';
+    $fragment = '';
+    $frag_length--;
   }
   if($frag_length == 0) {
     if($score > 15) {
@@ -88,7 +97,7 @@ sub  get_cruciform_nd {
     return get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'M',$alignment_right.'M',$score+1,$mismatch_count,$insert_count);
   } else {
     
-    if(length($alignment_left) >$loop_threshold && length(alignment_right) >=$loop_threshold) {
+    if(length($alignment_left) >$loop_threshold && length($alignment_right) >=$loop_threshold) {
           get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score,$mismatch_count,$insert_count);
     }
     if($mismatch_count <=2) {
