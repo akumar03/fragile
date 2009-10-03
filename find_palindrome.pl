@@ -9,7 +9,7 @@ $seq= "";
 $MAX_GAP = 10;
 $MIN_GAP = 0;
 $MAX_LENGTH = 20;
-$MIN_FRAG_LENGTH = 10;
+$MIN_FRAG_LENGTH = 20;
 $MAX_FRAG_LENGTH = 500;
 open(SEQ,$seq_file)  or die("Can't open sequence file: $seq_file");
 while($line = <SEQ>) {
