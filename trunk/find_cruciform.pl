@@ -57,9 +57,9 @@ for(my $i=0;$i<$seq_length;$i++) {
     if($loop_threshold <$STEM ) {
       $loop_threshold = $STEM;
     }
-     
+     $loop_count = 0;
 #    print "S: $i $j $loop_threshold\n";
-    get_cruciform_nd($orig_fragment,'','',0,$mismatch_count,$insert_count);
+    get_cruciform_nd($orig_fragment,'','',0,$mismatch_count,$insert_count,$loop_count);
   }
   open (STATUS,">status.out");
   print STATUS "At position $i";
@@ -74,10 +74,11 @@ sub  get_cruciform_nd {
   my $score = shift;
   my $mismatch_count = shift;
   my $insert_count = shift;
+  my $loop_count = shift;
   my $frag_length = length($fragment);
-  if($score > 0) {
-#    print "$start $orig_length $frag_length $mismatch_count $insert_count $loop_threshold $orig_fragment $alignment_left $alignment_right $score\n";
-  }
+#  if($score > 0) {
+#    print "$start $orig_length $frag_length $mismatch_count $insert_count $loop_count $loop_threshold $orig_fragment $fragment $alignment_left $alignment_right $score\n";
+#  }
   if($fragment_length == 1) {
     $alignment_left .= 'L';
     $fragment = '';
@@ -92,20 +93,23 @@ sub  get_cruciform_nd {
   } 
   my $char1 = substr($fragment,0,1);
   my $char2 = substr($fragment,$frag_length-1,1);
-
+  if($loop_count>0) {
+    get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score,$mismatch_count,$insert_count,$loop_count+1);
+   return;
+  }
   if(is_complement($char1,$char2)) {
-    return get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'M',$alignment_right.'M',$score+1,$mismatch_count,$insert_count);
+    get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'M',$alignment_right.'M',$score+1,$mismatch_count,$insert_count,$loop_count);
   } else {
     
     if(length($alignment_left) >$loop_threshold && length($alignment_right) >=$loop_threshold) {
-          get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score,$mismatch_count,$insert_count);
+          get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'L',$alignment_right.'L',$score,$mismatch_count,$insert_count,$loop_count+1);
     }
     if($mismatch_count <=2) {
-      get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'W',$alignment_right.'W',$score-1,$mismatch_count+1,$insert_count);
+      get_cruciform_nd(substr($fragment,1,$frag_length-2),$alignment_left.'W',$alignment_right.'W',$score-1,$mismatch_count+1,$insert_count,$loop_count);
     }
     if($insert_count <=1) {
-      get_cruciform_nd(substr($fragment,0,$frag_length-2),$alignment_left,$alignment_right.'G',$score-1,$mismatch_count,$insert_count+1);
-      get_cruciform_nd(substr($fragment,1,$frag_length-1),$alignment_left.'G',$alignment_left,$score-1,$mismatch_count,$insert_count+1);
+      get_cruciform_nd(substr($fragment,0,$frag_length-1),$alignment_left,$alignment_right.'G',$score-1,$mismatch_count,$insert_count+1,$loop_count);
+      get_cruciform_nd(substr($fragment,1,$frag_length-1),$alignment_left.'G',$alignment_right,$score-1,$mismatch_count,$insert_count+1,$loop_count);
     }
 
   }
