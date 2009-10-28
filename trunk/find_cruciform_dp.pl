@@ -59,11 +59,20 @@ for(my $i=0;$i<$seq_length;$i++) {
     }
      $loop_count = 0;
 #    print "S: $i $j $loop_threshold\n";
-    get_cruciform_nd($orig_fragment,'','',0,$mismatch_count,$insert_count,$loop_count);
+    get_cruciform_dp($orig_fragment);
   }
   open (STATUS,">status.out");
   print STATUS "At position $i";
   close STATUS;
+}
+
+# This method finds cruciform based on dynamic programming
+sub get_cruciform_dp {
+ my $fragment = shift;
+ my $top = substr($fragment,0,length($fragment)/2+$INSERT);
+ my $left = substr(reverse($fragment),0,length($fragment)/2+$INSERT);
+ 
+
 }
 
 # This method is not based on dynamic programming
