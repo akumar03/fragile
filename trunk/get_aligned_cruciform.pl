@@ -16,10 +16,11 @@ for($i=0;$i<=$#genomes;$i++) {
  open(GENOME,$genomes[$i]."_min40max200_best.txt");
  @genome_lines = <GENOME>;
  close GENOME;
+ $ref =  \@genome_lines;
  $all_genomes[$i] = \@genome_lines;
 }
 
-for($i=0;$i<=$#qlines;$i++) {
+for(my $i=0;$i<=$#qlines;$i++) {
   @words = split(/\W+/,$qlines[$i]);
   $position = $words[1];
   $score = $words[5];
@@ -27,7 +28,7 @@ for($i=0;$i<=$#qlines;$i++) {
   $align_length = length($align);
   print "H: P:$position S $score A:$align\n";
   for($j=0;$j<=$#genomes;$j++) {
-   $aligned_line =   get_aligned_line($position-$align_length,$position+$align_length,$j);
+   $aligned_line =   get_aligned_line($position-1000,$position+1000,$j);
    if($aligned_line) {
    @aligned_words = split(/\W+/,$aligned_line);
    $a_position = $aligned_words[1];
@@ -41,17 +42,21 @@ for($i=0;$i<=$#qlines;$i++) {
 } 
 
 sub get_aligned_line {
-  my $start = shift;
-  my $stop = shift;
+  my $start = int(shift);
+  my $stop = int(shift);
   my $genome_id = shift;
-  @lines =  @$all_genomes[$genome_id];
-  for($i=0;$i<=$#lines;$i++) {
+  $ref = $all_genomes[$genome_id];
+  @lines =  @$ref;
+  for(my $i=0;$i<=$#lines;$i++) {
     @words = split(/\W+/,$lines[$i]);
     $position = $words[1];
-    print "Working on $i $postion $start $stop\n";
-    if($position>=$start && $position <= $stop) {
+#    print "Working on $i $position $start $stop \n";
+    if( ($position >= $start) && ($position <= $stop)) {
  	return $lines[$genome_id][$i];
-    }
+    } elsif($position > $stop) {
+	return 0;
+    } 
+
   }  
   return 0;
 
