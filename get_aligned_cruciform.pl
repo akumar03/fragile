@@ -14,21 +14,21 @@ close QUERY;
 #load all genomes.  Will work for small datasets;
 for($i=0;$i<=$#genomes;$i++) {
  open(GENOME,$genomes[$i]."_min40max200_best.txt");
- @genome_lines = <GENOME>;
+ my @genome_lines = <GENOME>;
  close GENOME;
- $ref =  \@genome_lines;
+ my $ref =  \@genome_lines;
  $all_genomes[$i] = \@genome_lines;
 }
 
 for(my $i=0;$i<=$#qlines;$i++) {
-  @words = split(/\W+/,$qlines[$i]);
-  $position = $words[1];
+  my @words = split(/\W+/,$qlines[$i]);
+  my $position = $words[1];
   $score = $words[5];
   $align = $words[3];
   $align_length = length($align);
   print "H: P:$position S $score A:$align\n";
   for($j=0;$j<=$#genomes;$j++) {
-   $aligned_line =   get_aligned_line($position-1000,$position+1000,$j);
+   $aligned_line =   get_aligned_line($position-10000,$position+10000,$j);
    if($aligned_line) {
    @aligned_words = split(/\W+/,$aligned_line);
    $a_position = $aligned_words[1];
@@ -42,17 +42,17 @@ for(my $i=0;$i<=$#qlines;$i++) {
 } 
 
 sub get_aligned_line {
-  my $start = int(shift);
-  my $stop = int(shift);
+  my $start = shift;
+  my $stop = shift;
   my $genome_id = shift;
-  $ref = $all_genomes[$genome_id];
+  my $ref = $all_genomes[$genome_id];
   @lines =  @$ref;
   for(my $i=0;$i<=$#lines;$i++) {
-    @words = split(/\W+/,$lines[$i]);
-    $position = $words[1];
-#    print "Working on $i $position $start $stop \n";
+    my @words = split(/\W+/,$lines[$i]);
+    my $position = $words[1];
+#    print "Working on $genome_id $i $position $start $stop \n";
     if( ($position >= $start) && ($position <= $stop)) {
- 	return $lines[$genome_id][$i];
+ 	return $lines[$i];
     } elsif($position > $stop) {
 	return 0;
     } 
