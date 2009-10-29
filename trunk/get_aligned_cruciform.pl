@@ -23,22 +23,32 @@ for($i=0;$i<=$#genomes;$i++) {
 for(my $i=0;$i<=$#qlines;$i++) {
   my @words = split(/\W+/,$qlines[$i]);
   my $position = $words[1];
+  my @aligned_cruciforms;
   $score = $words[5];
   $align = $words[3];
   $align_length = length($align);
-  print "H: P:$position S $score A:$align\n";
+#  print "H: P:$position S $score A:$align\n";
+  push(@aligned_cruciforms,$qlines[$i]);
   for($j=0;$j<=$#genomes;$j++) {
+   
    $aligned_line =   get_aligned_line($position-10000,$position+10000,$j);
    if($aligned_line) {
+     push(@aligned_cruciforms,$aligned_line);
    @aligned_words = split(/\W+/,$aligned_line);
    $a_position = $aligned_words[1];
    $a_score = $aligned_words[5];
    $a_align = $aligned_words[3];
    $a_align_length = length($a_align);
-   print "$j: P:$a_position S $a_score A:$a_align\n";
+#   print "$j: P:$a_position S $a_score A:$a_align\n";
    }
+
   }
-  
+  if($#aligned_cruciforms >1) {
+    for(my $k=0;$k<=$#aligned_cruciforms;$k++) {
+	print_cruciform($k,$aligned_cruciforms[$k]);
+    }
+    get_cruciform_score(\@aligned_cruciforms);
+  }
 } 
 
 sub get_aligned_line {
@@ -59,6 +69,39 @@ sub get_aligned_line {
 
   }  
   return 0;
+}
 
+sub print_cruciform {
+  my $id = shift;
+  my $line = shift;
+  my @words = split(/\W+/,$line);
+  my $position = $words[1];
+  my $align = $words[3];
+  my $score = length($align);
+  print "$id: $position $score $align \n";
+
+}
+
+sub get_cruciform_score {
+   my $ref = shift;
+  my $score = 0;
+   my @cruciforms = @$ref;
+   my @clabels;
+   for(my $i = 0; $i<=$#cruciforms;$i++) {
+     my @words = split(/\W+/,$cruciforms[$i]);
+     $clabels[$i] =  $words[3];
+     $clabels[$i] =~ s/L//g;
+     $clabels[$i] =~ s/G//g;
+     $clabels[$i] = reverse($clabels[$i]);
+   }
+   for(my $j =0;$j < length($clabels[0]);$j++) {
+    for(my $i = 0; $i<=$#clabels;$i++) {
+        if(substr($clabels[$i],$j,1) eq "M") { $score++;} 
+	print substr($clabels[$i],$j,1)." "; 
+    }
+    print " $score\n";
+   }
+   $score = $score/($#clabels+1);
+   print "Score :$score\n";
 
 }
