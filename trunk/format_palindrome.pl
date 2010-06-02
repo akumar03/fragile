@@ -1,3 +1,4 @@
+# Program: format_palindrome.pl
 
 $out_file = $ARGV[0];
 $id = int($ARGV[1]);
