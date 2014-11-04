@@ -3,7 +3,7 @@
 # Date: 09/27/2009
 # Description: The program reads a sequence from file and finds cruciforms
 # * Loop of 0-12 in general case
-# * Loop pf 0-30 in AT rich if >=ATP (Default 80%)
+# * Loop of 0-30 in AT rich if >=ATP (Default 80%)
 # * Mismatch <= MISMATCH (Default 3)
 # * Insertions <=INSERT (Default 2)
 # * stem >= STEM (Default 20)
