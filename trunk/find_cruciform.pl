@@ -9,7 +9,7 @@
 # * stem >= STEM (Default 20)
 # * opveralap <=OVERLAP (Default 75%)
 
-
+$| = 1;
 
 $seq_file = $ARGV[0];
 $seq= "";
@@ -35,7 +35,8 @@ while($line = <SEQ>) {
 close(SEQ);
 
 $seq =~ s/\W+//g;
-# print $seq;
+$seq = uc $seq;
+ print $seq;
 
 $seq_length = length($seq);
 
@@ -76,10 +77,10 @@ sub  get_cruciform_nd {
   my $insert_count = shift;
   my $loop_count = shift;
   my $frag_length = length($fragment);
-#  if($score > 0) {
+#  if($score > 15) {
 #    print "$start $orig_length $frag_length $mismatch_count $insert_count $loop_count $loop_threshold $orig_fragment $fragment $alignment_left $alignment_right $score\n";
 #  }
-  if($fragment_length == 1) {
+ if($frag_length == 1) {
     $alignment_left .= 'L';
     $fragment = '';
     $frag_length--;
@@ -88,7 +89,7 @@ sub  get_cruciform_nd {
     if($score > 15) {
      print "F $start $orig_fragment $fragment $alignment_left $alignment_right $score\n";
     }
-#   print "$alignment_left $alignment_right $score\n";
+   print "$alignment_left $alignment_right $score\n";
    return 0;
   } 
   my $char1 = substr($fragment,0,1);
