@@ -36,7 +36,7 @@ close(SEQ);
 
 $seq =~ s/\W+//g;
 $seq = uc $seq;
- print $seq;
+# print $seq;
 
 $seq_length = length($seq);
 
@@ -89,7 +89,7 @@ sub  get_cruciform_nd {
     if($score > 15) {
      print "F $start $orig_fragment $fragment $alignment_left $alignment_right $score\n";
     }
-   print "$alignment_left $alignment_right $score\n";
+#   print "$alignment_left $alignment_right $score\n";
    return 0;
   } 
   my $char1 = substr($fragment,0,1);
