@@ -25,48 +25,51 @@ $LOOP = 12;
 $LOOP_AT = 30;
 $OVERLAP = 0.75;
 $SCORE_THRESHOLD = 15;
+$SEQ_BREAK = 10000000;
 
  
 open(SEQ,$seq_file)  or die("Can't open sequence file: $seq_file");
 while($line = <SEQ>) {
  if(!($line =~ m/^\>/)){
-  $seq .= $line;
+  $rseq .= $line;
  }
 }
 close(SEQ);
 
-$seq =~ s/\W+//g;
-$seq = uc $seq;
+$rseq =~ s/\W+//g;
+$rseq = uc $seq;
 # print $seq;
 
-$seq_length = length($seq);
+for(my $s_proc = 0; $s_proc < length($rseq); $s_proc += $SEQ_BREAK ) {
+	my $seq = substr $rseq, $s_proc,$SEQ_BREAK ;
+	$seq_length = length($seq);
 
-for(my $i=0;$i<$seq_length;$i++) {
-  $frag_end = $i+$MAX_FRAG_LENGTH; 
-  if($seq_length< $frag_end) { $frag_end= $seq_length ;}
-  for(my $j=$i+$MIN_FRAG_LENGTH;$j<$frag_end;$j++) {
-    $orig_fragment = substr($seq,$i,$j-$i+1);
-    $insert_count = 0;
-    $mismatch_count =0;
-    $start = $i;
-     $orig_length = length($orig_fragment);
-    if(is_AT_rich($orig_fragment)) {
-     $loop_threshold = ($orig_length -$LOOP_AT)/2;
-    } else {
-     $loop_threshold = ($orig_length -$LOOP)/2;
-    }
-    if($loop_threshold <$STEM ) {
-      $loop_threshold = $STEM;
-    }
-     $loop_count = 0;
+	for(my $i=0;$i<$seq_length;$i++) {
+		$frag_end = $i+$MAX_FRAG_LENGTH; 
+		if($seq_length< $frag_end) { $frag_end= $seq_length ;}
+		for(my $j=$i+$MIN_FRAG_LENGTH;$j<$frag_end;$j++) {
+			$orig_fragment = substr($seq,$i,$j-$i+1);
+			$insert_count = 0;
+			$mismatch_count =0;
+			$start = $i;
+			$orig_length = length($orig_fragment);
+			if(is_AT_rich($orig_fragment)) {
+				$loop_threshold = ($orig_length -$LOOP_AT)/2;
+			} else {
+				$loop_threshold = ($orig_length -$LOOP)/2;
+			}
+			if($loop_threshold <$STEM ) {
+				$loop_threshold = $STEM;
+			}
+			$loop_count = 0;
 #    print "S: $i $j $loop_threshold\n";
-    get_cruciform_nd($orig_fragment,'','',0,$mismatch_count,$insert_count,$loop_count);
-  }
-  open (STATUS,">status.out");
-  print STATUS "At position $i";
-  close STATUS;
+			get_cruciform_nd($orig_fragment,'','',0,$mismatch_count,$insert_count,$loop_count);
+		}
+		open (STATUS,">status.out");
+		print STATUS "At position $i";
+		close STATUS;
+	}
 }
-
 # This method is not based on dynamic programming
 sub  get_cruciform_nd {
   my $fragment = shift;
