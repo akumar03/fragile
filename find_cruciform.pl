@@ -16,7 +16,7 @@ $seq= "";
 $MAX_GAP = 10;
 $MIN_GAP = 0;
 $STEM = 20;
-$MIN_FRAG_LENGTH = 2*$STEM;
+$MIN_FRAG_LENGTH = 80;
 $MAX_FRAG_LENGTH = 200;
 $ATP = 0.80;
 $MISMATCH = 3;
@@ -24,6 +24,7 @@ $INSERT = 2;
 $LOOP = 12;
 $LOOP_AT = 30;
 $OVERLAP = 0.75;
+$SCORE_THRESHOLD = 15;
 
  
 open(SEQ,$seq_file)  or die("Can't open sequence file: $seq_file");
@@ -43,7 +44,6 @@ $seq_length = length($seq);
 for(my $i=0;$i<$seq_length;$i++) {
   $frag_end = $i+$MAX_FRAG_LENGTH; 
   if($seq_length< $frag_end) { $frag_end= $seq_length ;}
- 
   for(my $j=$i+$MIN_FRAG_LENGTH;$j<$frag_end;$j++) {
     $orig_fragment = substr($seq,$i,$j-$i+1);
     $insert_count = 0;
@@ -86,7 +86,7 @@ sub  get_cruciform_nd {
     $frag_length--;
   }
   if($frag_length == 0) {
-    if($score > 15) {
+    if($score > $SCORE_THRESHOLD) {
      print "F $start $orig_fragment $fragment $alignment_left $alignment_right $score\n";
     }
 #   print "$alignment_left $alignment_right $score\n";
@@ -131,8 +131,6 @@ sub get_best_cruciform {
    for(my $j =0;$j<$half-1;$j++) {
      my $char1 = substr($fragment,$i,1);
      my $char2 = substr($fragment,$frag_length-$j-1,1);
-     
-     
      
    }
 
