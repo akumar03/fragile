@@ -12,6 +12,9 @@
 $| = 1;
 
 $seq_file = $ARGV[0];
+$status_file = $ARGV[1];
+$START = $ARGV[2];
+$STOP = $ARGV[3];
 $seq= "";
 $MAX_GAP = 10;
 $MIN_GAP = 0;
@@ -37,21 +40,22 @@ while($line = <SEQ>) {
 close(SEQ);
 
 $rseq =~ s/\W+//g;
-$rseq = uc $seq;
+$rseq = uc $rseq;
 # print $seq;
-
-for(my $s_proc = 0; $s_proc < length($rseq); $s_proc += $SEQ_BREAK ) {
+#
+$s_proc_end = $STOP < length($rseq) ? $STOP:  length($rseq);
+for(my $s_proc = $START; $s_proc < $s_proc_end ; $s_proc += $SEQ_BREAK ) {
 	my $seq = substr $rseq, $s_proc,$SEQ_BREAK ;
 	$seq_length = length($seq);
-
 	for(my $i=0;$i<$seq_length;$i++) {
 		$frag_end = $i+$MAX_FRAG_LENGTH; 
 		if($seq_length< $frag_end) { $frag_end= $seq_length ;}
-		for(my $j=$i+$MIN_FRAG_LENGTH;$j<$frag_end;$j++) {
+		my $found_flag = 0;
+		for(my $j=$frag_end; ($j >=$i+$MIN_FRAG_LENGTH) && !$found_flag;$j--) {
 			$orig_fragment = substr($seq,$i,$j-$i+1);
 			$insert_count = 0;
 			$mismatch_count =0;
-			$start = $i;
+			$start = $s_proc+$i;
 			$orig_length = length($orig_fragment);
 			if(is_AT_rich($orig_fragment)) {
 				$loop_threshold = ($orig_length -$LOOP_AT)/2;
@@ -63,10 +67,10 @@ for(my $s_proc = 0; $s_proc < length($rseq); $s_proc += $SEQ_BREAK ) {
 			}
 			$loop_count = 0;
 #    print "S: $i $j $loop_threshold\n";
-			get_cruciform_nd($orig_fragment,'','',0,$mismatch_count,$insert_count,$loop_count);
+			$found_flag = get_cruciform_nd($orig_fragment,'','',0,$mismatch_count,$insert_count,$loop_count);
 		}
-		open (STATUS,">status.out");
-		print STATUS "At position $i";
+		open (STATUS,">".$status_file);
+		print STATUS "At position $start";
 		close STATUS;
 	}
 }
@@ -91,6 +95,7 @@ sub  get_cruciform_nd {
   if($frag_length == 0) {
     if($score > $SCORE_THRESHOLD) {
      print "F $start $orig_fragment $fragment $alignment_left $alignment_right $score\n";
+     return 1;
     }
 #   print "$alignment_left $alignment_right $score\n";
    return 0;

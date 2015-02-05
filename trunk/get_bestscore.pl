@@ -10,6 +10,7 @@ close DAT;
 
 $best_line ="";
 $best_score = 0;
+$length_threshold = 80;
 #$current_position = 130771;
 $current_position = 0;
 print "Position Length PalindromeSegment LeftFragment RightFragment Score\n";
@@ -21,7 +22,7 @@ for($i=0;$i<=$#lines;$i++) {
    if($position > $current_position) {
 	if($best_line) {
 #	  print $best_line;
-	  print $words[1]." ".length($words[2])." $words[2] $words[3] $words[4] $words[5]\n";
+	  if(length($words[2]) >= $length_threshold) {print $words[1]." ".length($words[2])." $words[2] $words[3] $words[4] $words[5]\n";}
 	  $best_score = 0;
 	  $best_line ="";
 	}
