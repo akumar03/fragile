@@ -7,12 +7,12 @@
 
 $| = 1;
 
-$seq_folder =  "/cluster/home/akumar03/fragile/data/hg_18_chr16_1_88827253_r1/";
-$seq_file = "hg_18_chr16_1_88827253.fasta";
-$out_folder = "/cluster/home/akumar03/fragile/data/hg_18_chr16_1_88827253_r1/";
+$seq_folder =  "/cluster/home/akumar03/fragile/data/hg18_chr16_78008602_79008602/";
+$seq_file = "hg38_chr16_78008602_79008602.fasta";
+$out_folder = "/cluster/home/akumar03/fragile/data/hg18_chr16_78008602_79008602/";
 $START = 0;
-$STOP = 10000000;
-$STEP = 1000000;
+$STOP = 1000000;
+$STEP = 100000;
 
 for($i = $START;$i<$STOP;$i += $STEP) {
 	$status_file = $out_folder.$seq_file."status_$i.st";

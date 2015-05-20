@@ -4,6 +4,9 @@
 # Description: The program takes the output from find_cruciform and filters it with lines that have best score
 
 $result_file = $ARGV[0];
+if($#ARGV == 1 )  {
+	$offset = $ARGV[1];
+} 
 open(DAT,$result_file);
 @lines = <DAT>;
 close DAT;
@@ -16,13 +19,13 @@ $current_position = 0;
 print "Position Length PalindromeSegment LeftFragment RightFragment Score\n";
 for($i=0;$i<=$#lines;$i++) {
    @words = split(/\W+/,$lines[$i]);
-   $position = $words[1];
+   $position = $offset+$words[1];
    $score = $words[5];
 #   print "S$score $best_score P:$position CP:$current_position\n";
    if($position > $current_position) {
 	if($best_line) {
 #	  print $best_line;
-	  if(length($words[2]) >= $length_threshold) {print $words[1]." ".length($words[2])." $words[2] $words[3] $words[4] $words[5]\n";}
+	  if(length($words[2]) >= $length_threshold) {print $position." ".length($words[2])." $words[2] $words[3] $words[4] $words[5]\n";}
 	  $best_score = 0;
 	  $best_line ="";
 	}
